@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -25,6 +26,15 @@ func main() {
 	if len(output) > 0 {
 		failWith(prettify(output))
 	}
+
+	success()
+}
+
+func success() {
+	formatter := formatter.ImageFormatter{}
+	formatter.Success()
+	fmt.Println()
+	fmt.Println("😸 Your spec file satifies all checks 😸")
 }
 
 func failWith(message string) {
