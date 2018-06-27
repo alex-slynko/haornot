@@ -61,5 +61,4 @@ var _ = Describe("Haornot", func() {
 			Expect(session.ExitCode()).NotTo(Equal(0))
 		})
 	})
-
 })

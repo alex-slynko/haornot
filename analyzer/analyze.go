@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/alex-slynko/haornot/types"
 	"k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -14,19 +15,25 @@ const notEnoughReplicasMessage = "At least 2 replicas required for deployment"
 const readinessProbeMissingMessage = "Pod %s does not have readiness probe"
 const imageVersionMessage = "Image %s for pod %s does not have version. It will always use latest"
 
-func Analyze(yaml []byte) ([]string, error) {
+var ErrNotADeployment = fmt.Errorf("Not a deployment")
+
+func Analyze(yaml []byte) (*types.Message, error) {
 	deployment, err := parseDeployment(yaml)
 
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 
+	msg := types.Message{Name: deployment.Name}
+
 	if deployment.Spec.Replicas == nil {
-		return []string{notEnoughReplicasMessage}, nil
+		msg.Errors = []string{notEnoughReplicasMessage}
+		return &msg, nil
 	}
 	r := *deployment.Spec.Replicas
 	if r < 2 {
-		return []string{notEnoughReplicasMessage}, nil
+		msg.Errors = []string{notEnoughReplicasMessage}
+		return &msg, nil
 	}
 
 	errors := []string{}
@@ -39,8 +46,9 @@ func Analyze(yaml []byte) ([]string, error) {
 			errors = append(errors, fmt.Sprintf(imageVersionMessage, c.Image, c.Name))
 		}
 	}
+	msg.Errors = errors
 
-	return errors, nil
+	return &msg, nil
 }
 
 func parseDeployment(yaml []byte) (*v1.Deployment, error) {
@@ -61,6 +69,6 @@ func parseDeployment(yaml []byte) (*v1.Deployment, error) {
 		err = json.Unmarshal(b, deployment)
 		return deployment, err
 	}
-	return &v1.Deployment{}, fmt.Errorf("only deployment can be analyzed")
+	return &v1.Deployment{}, ErrNotADeployment
 
 }

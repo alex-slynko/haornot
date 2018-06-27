@@ -1,6 +1,10 @@
 package formatter
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/alex-slynko/haornot/types"
+)
 
 type ImageFormatter struct{}
 
@@ -11,13 +15,36 @@ func (im ImageFormatter) Success() {
 	im.printImage(success)
 }
 
-func (im ImageFormatter) Fail(output string) {
+func (im ImageFormatter) CriticalFail(text string) {
+	im.printImage(failure)
+	fmt.Println()
+	fmt.Println(text)
+}
+
+func (im ImageFormatter) Progress(output *types.Message) {
+	fmt.Println("**** " + output.Name + " ****")
+	fmt.Println()
+	fmt.Println("✅👍✅👍✅👍✅👍✅")
+	fmt.Println()
+}
+func (im ImageFormatter) Fail(output *types.Message) {
+	fmt.Println("**** " + output.Name + " ****")
+	fmt.Println()
 	im.printImage(failure)
 
 	fmt.Println()
-	fmt.Println(output)
+	fmt.Println(prettify(output.Errors))
 }
 
 func (im ImageFormatter) printImage(image string) {
 	fmt.Printf("\033]1337;File=inline=1;preserveAspectRatio=1:%s\a\n", image)
+}
+
+func prettify(errors []string) string {
+	result := ""
+
+	for _, msg := range errors {
+		result = result + "😿 " + msg + "\n"
+	}
+	return result
 }

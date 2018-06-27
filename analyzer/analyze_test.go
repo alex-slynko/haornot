@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/alex-slynko/haornot/analyzer"
+	msg "github.com/alex-slynko/haornot/types"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/types"
@@ -21,11 +22,10 @@ type matchingElementMatcher struct {
 }
 
 func (matcher *matchingElementMatcher) Match(actual interface{}) (success bool, err error) {
-	array := actual.([]string)
-
-	if len(array) == 0 {
+	if actual == nil {
 		return false, nil
 	}
+	array := actual.(*msg.Message).Errors
 
 	substring := matcher.expected.(string)
 	for _, element := range array {
