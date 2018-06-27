@@ -171,8 +171,56 @@ spec:
 		})
 	})
 
+	Context("image version", func() {
+		It("checks image version", func() {
+			template := []byte(`apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx@sha256:e8a6b7d0ad011132b8cbb7ae399ed28585c2edc0a9fa216e4a93599a51accfc7
+        ports:
+        - containerPort: 80
+`)
+			output, err := analyzer.Analyze(template)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(output).NotTo(HaveMatchingElement("version"))
+		})
+
+		It("returns message when replicas are not specified", func() {
+			template := []byte(`apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+`)
+			output, err := analyzer.Analyze(template)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(output).To(HaveMatchingElement("version"))
+		})
+	})
+
 	Context("readiness probe", func() {
-		It("is successful for 3 and more replicas", func() {
+		It("check readiness probe", func() {
 			template := []byte(`apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -201,7 +249,7 @@ spec:
 			Expect(output).NotTo(HaveMatchingElement("readiness"))
 		})
 
-		It("returns message when replicas are not specified", func() {
+		It("returns message when readiness probe is not present", func() {
 			template := []byte(`apiVersion: apps/v1
 kind: Deployment
 metadata:

@@ -3,14 +3,16 @@ package analyzer
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes/scheme"
 )
 
-const notEnoughReplicas = "At least 2 replicas required for deployment"
-const readinessProbeMissing = "Pod %s does not have readiness probe"
+const notEnoughReplicasMessage = "At least 2 replicas required for deployment"
+const readinessProbeMissingMessage = "Pod %s does not have readiness probe"
+const imageVersionMessage = "Image %s for pod %s does not have version. It will always use latest"
 
 func Analyze(yaml []byte) ([]string, error) {
 	deployment, err := parseDeployment(yaml)
@@ -20,17 +22,21 @@ func Analyze(yaml []byte) ([]string, error) {
 	}
 
 	if deployment.Spec.Replicas == nil {
-		return []string{notEnoughReplicas}, nil
+		return []string{notEnoughReplicasMessage}, nil
 	}
 	r := *deployment.Spec.Replicas
 	if r < 2 {
-		return []string{notEnoughReplicas}, nil
+		return []string{notEnoughReplicasMessage}, nil
 	}
 
 	errors := []string{}
 	for _, c := range deployment.Spec.Template.Spec.Containers {
 		if c.ReadinessProbe == nil {
-			errors = append(errors, fmt.Sprintf(readinessProbeMissing, c.Name))
+			errors = append(errors, fmt.Sprintf(readinessProbeMissingMessage, c.Name))
+		}
+
+		if !strings.Contains(c.Image, ":") {
+			errors = append(errors, fmt.Sprintf(imageVersionMessage, c.Image, c.Name))
 		}
 	}
 
