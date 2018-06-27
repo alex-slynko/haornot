@@ -1,6 +1,8 @@
 package main_test
 
 import (
+	"path/filepath"
+	"runtime"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -13,12 +15,14 @@ func TestHaornot(t *testing.T) {
 	RunSpecs(t, "Haornot Suite")
 }
 
-var pathToCLI string
+var cwd, pathToCLI string
 
 var _ = BeforeSuite(func() {
 	var err error
 	pathToCLI, err = gexec.Build("github.com/alex-slynko/haornot")
 	Expect(err).ToNot(HaveOccurred())
+	_, filename, _, _ := runtime.Caller(0)
+	cwd = filepath.Dir(filename)
 })
 
 var _ = AfterSuite(func() {

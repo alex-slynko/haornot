@@ -13,6 +13,9 @@ func (im ImageFormatter) Success() {
 
 func (im ImageFormatter) Fail(output string) {
 	im.printImage(failure)
+
+	fmt.Println()
+	fmt.Println(output)
 }
 
 func (im ImageFormatter) printImage(image string) {
