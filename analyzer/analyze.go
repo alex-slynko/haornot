@@ -10,6 +10,7 @@ import (
 )
 
 const notEnoughReplicas = "At least 2 replicas required for deployment"
+const readinessProbeMissing = "Pod %s does not have readiness probe"
 
 func Analyze(yaml []byte) ([]string, error) {
 	deployment, err := parseDeployment(yaml)
@@ -26,7 +27,14 @@ func Analyze(yaml []byte) ([]string, error) {
 		return []string{notEnoughReplicas}, nil
 	}
 
-	return []string{}, nil
+	errors := []string{}
+	for _, c := range deployment.Spec.Template.Spec.Containers {
+		if c.ReadinessProbe == nil {
+			errors = append(errors, fmt.Sprintf(readinessProbeMissing, c.Name))
+		}
+	}
+
+	return errors, nil
 }
 
 func parseDeployment(yaml []byte) (*v1.Deployment, error) {
