@@ -12,7 +12,7 @@ Right now only limited amount of checks is implemented
 
 ## Images
 
-All images are drawn by @mordebites
+All images are drawn by [@mordebites](https://github.com/mordebites)
 
 ## TODO
 
